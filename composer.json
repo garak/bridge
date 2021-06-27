@@ -12,14 +12,14 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "doctrine/collections": "^1.6",
-        "garak/card": "^0.1"
+        "garak/card": "^0.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0-dev"
+            "dev-main": "1.0-dev"
         }
     },
     "autoload": {

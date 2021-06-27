@@ -198,13 +198,13 @@ abstract class Game
     {
         $this->checkTurn($turn);
         $this->turns->add($turn);
-        $nordHand = $this->currentTable->getNorth();
-        $eastHand = $this->currentTable->getEast();
-        $southHand = $this->currentTable->getSouth();
-        $westHand = $this->currentTable->getWest();
+        $nordHand = $this->currentTable->getNorth(null);
+        $eastHand = $this->currentTable->getEast(null);
+        $southHand = $this->currentTable->getSouth(null);
+        $westHand = $this->currentTable->getWest(null);
         $side = $turn->getSide()->getName();
         /** @var Hand $hand */
-        $hand = $this->currentTable->{'get'.$side}();
+        $hand = $this->currentTable->{'get'.$side}(null);
         ${'hand'.$side} = $hand->play($turn->getCard());
         $this->currentTable = new Table($nordHand, $eastHand, $southHand, $westHand);
         $this->updateWins();
@@ -305,7 +305,7 @@ abstract class Game
         }
         // player had opening suit, but they played another one. This is forbidden!
         $side = $turn->getSide()->getName();
-        $currentPlayerCards = $this->currentTable->{'get'.$side}()->getCards();
+        $currentPlayerCards = $this->currentTable->{'get'.$side}(null)->getCards();
         foreach ($currentPlayerCards as $card) {
             if ($card->getSuit()->isEqual($openingSuit)) {
                 $error = 'Cannot play suit %s, because opening suit is %s.';

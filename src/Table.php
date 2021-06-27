@@ -3,6 +3,7 @@
 namespace Garak\Bridge;
 
 use Garak\Card\Card;
+use Garak\Card\Suit;
 
 /**
  * A Table is composed by Hands assigned to the four Sides.
@@ -33,23 +34,39 @@ final class Table
         }
     }
 
-    public function getNorth(): Hand
+    public function getNorth(?bool $sort = false, ?Suit $trump = null): Hand
     {
+        if ($sort) {
+            $this->north->bridgeSort($trump);
+        }
+
         return $this->north;
     }
 
-    public function getSouth(): Hand
+    public function getSouth(?bool $sort = false, ?Suit $trump = null): Hand
     {
+        if ($sort) {
+            $this->south->bridgeSort($trump);
+        }
+
         return $this->south;
     }
 
-    public function getWest(): Hand
+    public function getWest(?bool $sort = false, ?Suit $trump = null): Hand
     {
+        if ($sort) {
+            $this->west->bridgeSort($trump);
+        }
+
         return $this->west;
     }
 
-    public function getEast(): Hand
+    public function getEast(?bool $sort = false, ?Suit $trump = null): Hand
     {
+        if ($sort) {
+            $this->east->bridgeSort($trump);
+        }
+
         return $this->east;
     }
 
