@@ -102,20 +102,12 @@ abstract class Game
         if (null !== $side) {
             return null !== $this->{'player'.$side} && $this->{'player'.$side}->isEqual($player);
         }
-        if (null !== $this->playerN && $this->playerN->isEqual($player)) {
-            return true;
-        }
-        if (null !== $this->playerE && $this->playerE->isEqual($player)) {
-            return true;
-        }
-        if (null !== $this->playerS && $this->playerS->isEqual($player)) {
-            return true;
-        }
-        if (null !== $this->playerW && $this->playerW->isEqual($player)) {
-            return true;
-        }
 
-        return false;
+        return $this->playerN?->isEqual($player)
+            || $this->playerE?->isEqual($player)
+            || $this->playerS?->isEqual($player)
+            || $this->playerW?->isEqual($player)
+        ;
     }
 
     public function getPlayingPlayer(): Player
@@ -191,7 +183,7 @@ abstract class Game
 
     public function isComplete(): bool
     {
-        return null !== $this->playerN && null !== $this->playerE && null !== $this->playerS && null !== $this->playerS;
+        return null !== $this->playerN && null !== $this->playerE && null !== $this->playerS && null !== $this->playerW;
     }
 
     public function addTurn(Turn $turn): void
@@ -243,11 +235,6 @@ abstract class Game
         return $this->auction;
     }
 
-    public function getAuctionTrump(): ?Suit
-    {
-        return null === $this->auction ? null : $this->auction->getTrump();
-    }
-
     /**
      * @return array<int, Turn>
      *
@@ -269,12 +256,7 @@ abstract class Game
 
     public function getTrump(): ?Suit
     {
-        return null === $this->auction ? null : $this->auction->getTrump();
-    }
-
-    public function isFinished(): bool
-    {
-        return $this->currentTable->isEmpty();
+        return $this->auction?->getTrump();
     }
 
     /**
@@ -330,6 +312,9 @@ abstract class Game
         return $previousTurn->getCard()->getSuit();
     }
 
+    /**
+     * @throws \Exception
+     */
     private function updateWins(): void
     {
         $tableTurns = $this->getTableTurns();
@@ -364,6 +349,9 @@ abstract class Game
         return $iterator;
     }
 
+    /**
+     * @throws \Exception
+     */
     private function isGreaterThanPrevious(Auction $auction): bool
     {
         if ($this->auctions->count() < 1 || null === $auction->getValue()) {
@@ -381,6 +369,9 @@ abstract class Game
         return true;
     }
 
+    /**
+     * @throws \Exception
+     */
     private function isAuctionEnded(): bool
     {
         if ($this->auctions->count() < 4) {
@@ -396,11 +387,17 @@ abstract class Game
         return true;
     }
 
+    /**
+     * @throws \Exception
+     */
     private function getLastValidAuction(): Auction
     {
         return \array_slice(\iterator_to_array($this->getOrderedAuctions()), 3, 1)[0];
     }
 
+    /**
+     * @throws \Exception
+     */
     private function getAuctionSide(): Side
     {
         // with less than 2 full turns, last auction wins

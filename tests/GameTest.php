@@ -28,7 +28,7 @@ final class GameTest extends TestCase
         self::assertEquals('South', $game->getCurrentSide()->getName());
         self::assertEquals('4d', $game->getAuction());
         self::assertEquals('W', (string) $game->getDummySide());
-        self::assertEquals(new Suit('d'), $game->getAuctionTrump());
+        self::assertEquals(new Suit('d'), $game->getTrump());
     }
 
     public function testGameWithMoreThan7Auctions(): void
@@ -62,7 +62,7 @@ final class GameTest extends TestCase
         new Turn($game, 3, $table->getSouth()->getRandomCard($first->getSuit()));
         self::assertEquals(new Side('W'), $game->getCurrentSide());
         new Turn($game, 4, $table->getWest()->getRandomCard($first->getSuit()));
-        self::assertFalse($game->isFinished());
+        self::assertFalse($game->isGameOver());
         self::assertCount(4, $game->getTurns());
     }
 

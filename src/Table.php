@@ -72,7 +72,7 @@ final class Table
 
     public function isEmpty(): bool
     {
-        return $this->north->isEmpty() && $this->south->isEmpty() && $this->west->isEmpty() && $this->south->isEmpty();
+        return $this->north->isEmpty() && $this->south->isEmpty() && $this->west->isEmpty() && $this->east->isEmpty();
     }
 
     /**
@@ -83,7 +83,7 @@ final class Table
         $callback = static fn (Card $card1, Card $card2): int => \strcasecmp($card1, $card2);
         $intersect = \array_uintersect($trick1->getCards(), $trick2->getCards(), $callback);
         if (\count($intersect) > 0) {
-            $cards = \array_map(static fn (string $rankSuit): string => Card::fromRankSuit($rankSuit)->toText(), $intersect);
+            $cards = \array_map(static fn (Card $card): string => $card->toText(), $intersect);
             $error = 'Cannot assign same cards: %s';
             throw new \InvalidArgumentException(\sprintf($error, \implode(', ', $cards)));
         }

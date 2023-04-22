@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+    php:
+        build:
+            context: docker
+        volumes:
+            - ./:/srv/bridge
+        working_dir: /srv/bridge
+        tty: true

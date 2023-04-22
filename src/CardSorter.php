@@ -10,7 +10,7 @@ final class CardSorter
     /** @param array<int|string, Card> $cards */
     public static function sort(array &$cards, ?Suit $trump): void
     {
-        \usort($cards, static function (Card $card1, Card $card2) use ($trump): int {
+        \usort($cards, static function (Card $card2, Card $card1) use ($trump): int {
             if (null !== $trump && ($card1->getSuit()->isEqual($trump) || $card2->getSuit()->isEqual($trump))) {
                 if ($card1->getSuit()->isEqual($trump) && !$card2->getSuit()->isEqual($trump)) {
                     return 1;
@@ -28,6 +28,5 @@ final class CardSorter
 
             return $card1->getSuit()->getInt() <=> $card2->getSuit()->getInt();
         });
-        $cards = \array_reverse($cards);
     }
 }
