@@ -1,11 +1,20 @@
 # PHP Bridge library
 
+[![Latest Stable Version](http://poser.pugx.org/garak/bridge/v)](https://packagist.org/packages/garak/bridge)
+[![Latest Unstable Version](http://poser.pugx.org/garak/bridge/v/unstable)](https://packagist.org/packages/garak/bridge) 
+[![License](http://poser.pugx.org/garak/bridge/license)](https://packagist.org/packages/garak/bridge) 
+[![PHP Version Require](http://poser.pugx.org/garak/bridge/require/php)](https://packagist.org/packages/garak/bridge)
+[![Maintainability](https://api.codeclimate.com/v1/badges/2241c6ad53dd85ccd18b/maintainability)](https://codeclimate.com/github/garak/bridge/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/2241c6ad53dd85ccd18b/test_coverage)](https://codeclimate.com/github/garak/bridge/test_coverage)
+
+![https://commons.wikimedia.org/wiki/File:Four_overlapping_playing_cards.jpg](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Four_overlapping_playing_cards.jpg/120px-Four_overlapping_playing_cards.jpg)
+
 ## Introduction
 
-This library offers some objects useful to create a Bridge card game:
+This library offers some PHP classes useful to create a Bridge card game:
 
-* Game (to be extended)
-* Player (to be extended)
+* Game _(to be extended)_
+* Player _(to be extended)_
 * Table
 * Turn
 * Hand
@@ -18,7 +27,7 @@ Run `composer require garak/bridge`.
 
 ## Usage
 
-Here is an example of the beginning of a game:
+Here is an example of the first turn of a game:
 
 ```php
 <?php
