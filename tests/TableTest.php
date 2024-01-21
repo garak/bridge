@@ -4,6 +4,7 @@ namespace Garak\Bridge\Test;
 
 use Garak\Bridge\Hand;
 use Garak\Bridge\Table;
+use Garak\Card\Card;
 use PHPUnit\Framework\TestCase;
 
 final class TableTest extends TestCase
@@ -17,5 +18,22 @@ final class TableTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Cannot assign same cards: 6♠');
         new Table($north, $east, $south, $west);
+    }
+
+    public function testGetSortedSides(): void
+    {
+        $deck = Card::getDeck(true);
+        $cards = \array_chunk($deck, 13);
+
+        $north = new Hand($cards[0], true);
+        $east = new Hand($cards[1], true);
+        $south = new Hand($cards[2], true);
+        $west = new Hand($cards[3], true);
+
+        $table = new Table($north, $east, $south, $west);
+        $this->assertCount(13, $table->getNorth(true)->getCards());
+        $this->assertCount(13, $table->getEast(true)->getCards());
+        $this->assertCount(13, $table->getSouth(true)->getCards());
+        $this->assertCount(13, $table->getWest(true)->getCards());
     }
 }
