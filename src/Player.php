@@ -2,7 +2,7 @@
 
 namespace Garak\Bridge;
 
-abstract class Player
+abstract class Player implements \Stringable
 {
     protected string $name;
 

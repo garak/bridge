@@ -4,7 +4,7 @@ namespace Garak\Bridge;
 
 use Garak\Card\Suit;
 
-abstract class Auction
+abstract class Auction implements \Stringable
 {
     protected Game $game;
 

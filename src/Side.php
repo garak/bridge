@@ -2,7 +2,7 @@
 
 namespace Garak\Bridge;
 
-final class Side
+final class Side implements \Stringable
 {
     public const SIDES = ['N' => 'North', 'E' => 'East', 'S' => 'South', 'W' => 'West'];
 
