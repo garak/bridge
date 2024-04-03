@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This library offers some PHP classes useful to create a Bridge card game:
+This library offers some PHP classes useful for creating a Bridge card game:
 
 * Game _(to be extended)_
 * Player _(to be extended)_
@@ -60,4 +60,4 @@ echo $game->getWins()->getEastWest();   // will output "1", since West won the f
 
 ## TODO
 
-Auction implementation is still to do...
+Auction implementation is still to be done...
