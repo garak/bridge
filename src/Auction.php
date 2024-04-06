@@ -6,23 +6,15 @@ use Garak\Card\Suit;
 
 abstract class Auction implements \Stringable
 {
-    protected Game $game;
-
-    protected int $order;
-
     protected Side $side;
 
-    protected ?int $value;
-
-    protected ?Suit $trump;
-
-    public function __construct(Game $game, int $order, ?int $value, ?Suit $trump)
-    {
-        $this->game = $game;
-        $this->order = $order;
+    public function __construct(
+        protected Game $game,
+        protected int $order,
+        protected ?int $value,
+        protected ?Suit $trump
+    ) {
         $this->side = $game->getCurrentSide();
-        $this->value = $value;
-        $this->trump = $trump;
         $game->advance();
         $game->addAuction($this);
     }

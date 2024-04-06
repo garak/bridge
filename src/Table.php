@@ -10,20 +10,13 @@ use Garak\Card\Suit;
  */
 final class Table
 {
-    private Hand $north;
-
-    private Hand $south;
-
-    private Hand $west;
-
-    private Hand $east;
-
-    public function __construct(Hand $north, Hand $east, Hand $south, Hand $west, bool $check = true)
-    {
-        $this->north = $north;
-        $this->east = $east;
-        $this->south = $south;
-        $this->west = $west;
+    public function __construct(
+        private readonly Hand $north,
+        private readonly Hand $east,
+        private readonly Hand $south,
+        private readonly Hand $west,
+        bool $check = true
+    ) {
         if ($check) {
             self::check($north, $east);
             self::check($north, $south);

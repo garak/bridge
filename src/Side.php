@@ -6,14 +6,11 @@ final class Side implements \Stringable
 {
     public const SIDES = ['N' => 'North', 'E' => 'East', 'S' => 'South', 'W' => 'West'];
 
-    private string $side;
-
-    public function __construct(string $side)
+    public function __construct(private readonly string $side)
     {
         if (!isset(self::SIDES[$side])) {
             throw new \InvalidArgumentException(\sprintf('Invalid side: %s.', $side));
         }
-        $this->side = $side;
     }
 
     public function __toString(): string

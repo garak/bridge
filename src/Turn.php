@@ -10,20 +10,11 @@ use Garak\Card\Card;
  */
 class Turn
 {
-    protected Game $game;
-
-    protected int $order;
-
     protected Side $side;
 
-    protected Card $card;
-
-    public function __construct(Game $game, int $order, Card $card)
+    public function __construct(protected Game $game, protected int $order, protected Card $card)
     {
-        $this->game = $game;
-        $this->order = $order;
         $this->side = $game->getCurrentSide();
-        $this->card = $card;
         $game->advance();
         $game->addTurn($this);
     }

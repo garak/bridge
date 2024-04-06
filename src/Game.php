@@ -18,8 +18,6 @@ abstract class Game
 
     protected ?Player $dummy = null;
 
-    protected Table $startingTable;
-
     protected Table $currentTable;
 
     protected Side $currentSide;
@@ -34,9 +32,8 @@ abstract class Game
     /** @var Collection<int, Turn> */
     protected Collection $turns;
 
-    public function __construct(Table $startingTable, Side $startingSide)
+    public function __construct(protected Table $startingTable, Side $startingSide)
     {
-        $this->startingTable = $startingTable;
         $this->currentTable = $startingTable;
         $this->currentSide = $startingSide;
         $this->wins = new Wins();

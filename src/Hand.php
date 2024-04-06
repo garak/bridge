@@ -2,15 +2,11 @@
 
 namespace Garak\Bridge;
 
-use Garak\Card\Card;
 use Garak\Card\Hand as BaseHand;
 use Garak\Card\Suit;
 
 final class Hand extends BaseHand
 {
-    /**
-     * @param array<int|string, Card> $cards
-     */
     public function __construct(array $cards, bool $start = true, ?callable $checking = null, ?callable $sorting = null)
     {
         $checking ??= static fn (array $cards): bool => 13 === \count($cards);

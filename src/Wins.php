@@ -7,14 +7,11 @@ namespace Garak\Bridge;
  */
 final class Wins
 {
-    private int $northSouth;
 
-    private int $eastWest;
-
-    public function __construct(int $northSouth = 0, int $eastWest = 0)
-    {
-        $this->northSouth = $northSouth;
-        $this->eastWest = $eastWest;
+    public function __construct(
+        private readonly int $northSouth = 0,
+        private readonly int $eastWest = 0
+    ) {
     }
 
     public function northWins(): self
