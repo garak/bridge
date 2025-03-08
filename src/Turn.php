@@ -5,7 +5,7 @@ namespace Garak\Bridge;
 use Garak\Card\Card;
 
 /**
- * A Turn represent a Card played by a Side in a Game.
+ * A Turn represents a Card played by a Side in a Game.
  * Turns are sorted by $order.
  */
 class Turn
