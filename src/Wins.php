@@ -7,10 +7,9 @@ namespace Garak\Bridge;
  */
 final class Wins
 {
-
     public function __construct(
         private readonly int $northSouth = 0,
-        private readonly int $eastWest = 0
+        private readonly int $eastWest = 0,
     ) {
     }
 

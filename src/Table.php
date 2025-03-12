@@ -15,7 +15,7 @@ final class Table
         private readonly Hand $east,
         private readonly Hand $south,
         private readonly Hand $west,
-        bool $check = true
+        bool $check = true,
     ) {
         if ($check) {
             self::check($north, $east);

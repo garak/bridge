@@ -13,8 +13,8 @@
 
 This library offers some PHP classes useful for creating a Bridge card game:
 
-* Game _(to be extended)_
-* Player _(to be extended)_
+* Game _(needs to be extended)_
+* Player _(needs to be extended)_
 * Table
 * Turn
 * Hand
@@ -46,7 +46,7 @@ $east  = Hand::createFromString('9d,Jh,5s,8c,Ks,4s,5h,4d,8s,Jc,2d,2s,Qs');
 $south = Hand::createFromString('7h,Kd,Js,2h,Th,Qh,7s,Ac,3c,Ad,7c,9s,6h');
 $west  = Hand::createFromString('9h,Ts,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d');
 $table = new Table($north, $east, $south, $west);
-$game  = new Game($table, new Side('N'));   // second argument is starting side
+$game  = new Game($table, new Side('N'));   // second argument is the starting side
 $game->join(new Player('John Doe'), new Side('N'));
 $game->join(new Player('Will Riker'), new Side('E'));
 $game->join(new Player('Yoda'), new Side('S'));

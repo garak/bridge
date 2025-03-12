@@ -12,7 +12,7 @@ abstract class Auction implements \Stringable
         protected Game $game,
         protected int $order,
         protected ?int $value,
-        protected ?Suit $trump
+        protected ?Suit $trump,
     ) {
         $this->side = $game->getCurrentSide();
         $game->advance();
