@@ -3,3 +3,11 @@ parameters:
     paths:
         - src
         - tests
+    ignoreErrors:
+        -
+            identifier: method.dynamicName
+        -
+            identifier: property.dynamicName
+
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon

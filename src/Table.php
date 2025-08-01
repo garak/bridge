@@ -27,7 +27,7 @@ final class Table
         }
     }
 
-    public function getNorth(?bool $sort = false, ?Suit $trump = null): Hand
+    public function getNorth(bool $sort = false, ?Suit $trump = null): Hand
     {
         if ($sort) {
             $this->north->bridgeSort($trump);
@@ -36,7 +36,7 @@ final class Table
         return $this->north;
     }
 
-    public function getSouth(?bool $sort = false, ?Suit $trump = null): Hand
+    public function getSouth(bool $sort = false, ?Suit $trump = null): Hand
     {
         if ($sort) {
             $this->south->bridgeSort($trump);
@@ -45,7 +45,7 @@ final class Table
         return $this->south;
     }
 
-    public function getWest(?bool $sort = false, ?Suit $trump = null): Hand
+    public function getWest(bool $sort = false, ?Suit $trump = null): Hand
     {
         if ($sort) {
             $this->west->bridgeSort($trump);
@@ -54,7 +54,7 @@ final class Table
         return $this->west;
     }
 
-    public function getEast(?bool $sort = false, ?Suit $trump = null): Hand
+    public function getEast(bool $sort = false, ?Suit $trump = null): Hand
     {
         if ($sort) {
             $this->east->bridgeSort($trump);

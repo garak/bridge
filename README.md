@@ -4,8 +4,8 @@
 [![Latest Unstable Version](http://poser.pugx.org/garak/bridge/v/unstable)](https://packagist.org/packages/garak/bridge) 
 [![License](http://poser.pugx.org/garak/bridge/license)](https://packagist.org/packages/garak/bridge) 
 [![PHP Version Require](http://poser.pugx.org/garak/bridge/require/php)](https://packagist.org/packages/garak/bridge)
-[![Maintainability](https://api.codeclimate.com/v1/badges/2241c6ad53dd85ccd18b/maintainability)](https://codeclimate.com/github/garak/bridge/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/2241c6ad53dd85ccd18b/test_coverage)](https://codeclimate.com/github/garak/bridge/test_coverage)
+[![Maintainability](https://qlty.sh/gh/garak/projects/bridge/maintainability.svg)](https://qlty.sh/gh/garak/projects/bridge)
+[![Code Coverage](https://qlty.sh/gh/garak/projects/bridge/coverage.svg)](https://qlty.sh/gh/garak/projects/bridge)
 
 ![https://commons.wikimedia.org/wiki/File:Four_overlapping_playing_cards.jpg](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Four_overlapping_playing_cards.jpg/120px-Four_overlapping_playing_cards.jpg)
 
@@ -46,7 +46,7 @@ $east  = Hand::createFromString('9d,Jh,5s,8c,Ks,4s,5h,4d,8s,Jc,2d,2s,Qs');
 $south = Hand::createFromString('7h,Kd,Js,2h,Th,Qh,7s,Ac,3c,Ad,7c,9s,6h');
 $west  = Hand::createFromString('9h,Ts,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d');
 $table = new Table($north, $east, $south, $west);
-$game  = new Game($table, new Side('N'));   // second argument is the starting side
+$game  = new Game($table, startingSide: new Side('N'));
 $game->join(new Player('John Doe'), new Side('N'));
 $game->join(new Player('Will Riker'), new Side('E'));
 $game->join(new Player('Yoda'), new Side('S'));

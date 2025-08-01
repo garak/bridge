@@ -31,9 +31,9 @@ final class TableTest extends TestCase
         $west = new Hand($cards[3], true);
 
         $table = new Table($north, $east, $south, $west);
-        $this->assertCount(13, $table->getNorth(true)->getCards());
-        $this->assertCount(13, $table->getEast(true)->getCards());
-        $this->assertCount(13, $table->getSouth(true)->getCards());
-        $this->assertCount(13, $table->getWest(true)->getCards());
+        self::assertCount(13, $table->getNorth(true)->getCards());
+        self::assertCount(13, $table->getEast(true)->getCards());
+        self::assertCount(13, $table->getSouth(true)->getCards());
+        self::assertCount(13, $table->getWest(true)->getCards());
     }
 }

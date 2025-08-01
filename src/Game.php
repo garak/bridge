@@ -100,7 +100,7 @@ abstract class Game
             return null !== $this->{'player'.$side} && $this->{'player'.$side}->isEqual($player);
         }
 
-        return $this->playerN?->isEqual($player)
+        return $this->playerN?->isEqual($player)    // @phpstan-ignore-line booleanOr.leftNotBoolean
             || $this->playerE?->isEqual($player)
             || $this->playerS?->isEqual($player)
             || $this->playerW?->isEqual($player)
@@ -150,7 +150,7 @@ abstract class Game
             return null;
         }
         foreach (Side::SIDES as $short => $name) {
-            /** @var Player $player */
+            /** @var Player|null $player */
             $player = $this->{'player'.$short};
             if (null !== $player && $player->isEqual($this->dummy)) {
                 return new Side($short);
@@ -187,14 +187,14 @@ abstract class Game
     {
         $this->checkTurn($turn);
         $this->turns->add($turn);
-        $nordHand = $this->currentTable->getNorth(null);
-        $eastHand = $this->currentTable->getEast(null);
-        $southHand = $this->currentTable->getSouth(null);
-        $westHand = $this->currentTable->getWest(null);
+        $nordHand = $this->currentTable->getNorth();
+        $eastHand = $this->currentTable->getEast();
+        $southHand = $this->currentTable->getSouth();
+        $westHand = $this->currentTable->getWest();
         $side = $turn->getSide()->getName();
         /** @var Hand $hand */
-        $hand = $this->currentTable->{'get'.$side}(null);
-        ${'hand'.$side} = $hand->play($turn->getCard());
+        $hand = $this->currentTable->{'get'.$side}();
+        ${'hand'.$side} = $hand->play($turn->getCard());    // @phpstan-ignore-line variable.dynamicName
         $this->currentTable = new Table($nordHand, $eastHand, $southHand, $westHand);
         $this->updateWins();
     }
@@ -284,7 +284,7 @@ abstract class Game
         }
         // player had opening suit, but they played another one. This is forbidden!
         $side = $turn->getSide()->getName();
-        $currentPlayerCards = $this->currentTable->{'get'.$side}(null)->getCards();
+        $currentPlayerCards = $this->currentTable->{'get'.$side}()->getCards();
         foreach ($currentPlayerCards as $card) {
             if ($card->getSuit()->isEqual($openingSuit)) {
                 $error = 'Cannot play suit %s, because opening suit is %s.';
@@ -304,7 +304,7 @@ abstract class Game
             $opt = $order - 3;
         }
         /** @var Turn $previousTurn */
-        $previousTurn = $this->turns->filter(static fn (Turn $turn): bool => $turn->getOrder() === $opt)->first();
+        $previousTurn = $this->turns->findFirst(static fn (int $k, Turn $t): bool => $t->getOrder() === $opt);
 
         return $previousTurn->getCard()->getSuit();
     }
@@ -327,7 +327,7 @@ abstract class Game
         $winner = $trick->getWinningCard($this->getTrump());
         /** @var string $winnerSide */
         $winnerSide = \array_search($winner, $cards, true);
-        $side = Side::SIDES[$winnerSide];
+        $side = \strtolower(Side::SIDES[$winnerSide]);
         $this->wins = $this->wins->{$side.'Wins'}();
         $this->currentSide = new Side($winnerSide);
     }
