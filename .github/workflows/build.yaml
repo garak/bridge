@@ -12,9 +12,9 @@ jobs:
         name: PHPStan
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - run: |
-                  sed -e :a -e '$d;N;2,3ba' -e 'P;D' phpstan.neon > phpstan2.neon && mv phpstan2.neon phpstan.neon
+                  sed -e :a -e '$d;N;2,3ba' -e 'P;D' -i phpstan.neon
             - name: PHPStan
               uses: docker://oskarstark/phpstan-ga
               env:
@@ -26,7 +26,7 @@ jobs:
         name: PHP-CS-Fixer
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - name: Fix CS
               uses: docker://oskarstark/php-cs-fixer-ga
               with:
@@ -37,37 +37,38 @@ jobs:
             max-parallel: 1
             matrix:
                 php:
-                    - '8.1'
                     - '8.2'
                     - '8.3'
                     - '8.4'
+                    - '8.5'
                 include:
                     - description: 'lowest'
-                      php: '8.1'
-                      composer_option: '--prefer-lowest'
-                    - description: '8.2'
                       php: '8.2'
+                      dependencies: lowest
                     - description: '8.3'
                       php: '8.3'
-                    - description: 'latest'
+                    - description: '8.4'
                       php: '8.4'
+                    - description: 'latest'
+                      php: '8.5'
         name: PHP ${{ matrix.php }} tests
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
             - name: Install dependencies
-              uses: ramsey/composer-install@v2
+              uses: ramsey/composer-install@v3
               with:
                   dependency-versions: ${{ matrix.dependencies }}
             - name: Run tests
               run: vendor/bin/phpunit --colors=always --coverage-clover coverage.xml
-            - name: Test & publish code coverage
+            - name: Publish code coverage
               if: ${{ matrix.php == '8.4' }}
               uses: qltysh/qlty-action/coverage@v1
               with:
                   token: ${{secrets.QLTY_COVERAGE_TOKEN}}
+                  format: clover
                   files: coverage.xml
