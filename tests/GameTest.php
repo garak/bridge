@@ -80,7 +80,7 @@ final class GameTest extends TestCase
         new Turn($game, 4, Card::fromRankSuit('Ts'));
         self::assertEquals(1, $game->getWins()->getEastWest());
         self::assertEquals(0, $game->getWins()->getNorthSouth());
-        $hand = Hand::createFromString('9h,Ts,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d', false);
+        $hand = Hand::createFromString('9h,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d', false);
         self::assertEquals((string) $hand, (string) $game->getCurrentHand());
     }
 
@@ -92,10 +92,10 @@ final class GameTest extends TestCase
         $west = Hand::createFromString('9h,Ts,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d');
         $table = new Table($north, $east, $south, $west);
         $game = new StubGame($table, new Side('N'));
-        $game->addTurn(new Turn($game, 1, Card::fromRankSuit('6s')));
+        new Turn($game, 1, Card::fromRankSuit('6s'));
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Cannot play suit ♦, because opening suit is ♠.');
-        $game->addTurn(new Turn($game, 2, Card::fromRankSuit('9d')));
+        new Turn($game, 2, Card::fromRankSuit('9d'));
     }
 
     public function testJoin(): void

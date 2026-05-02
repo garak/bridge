@@ -187,15 +187,28 @@ abstract class Game
     {
         $this->checkTurn($turn);
         $this->turns->add($turn);
-        $nordHand = $this->currentTable->getNorth();
+        $northHand = $this->currentTable->getNorth();
         $eastHand = $this->currentTable->getEast();
         $southHand = $this->currentTable->getSouth();
         $westHand = $this->currentTable->getWest();
-        $side = $turn->getSide()->getName();
-        /** @var Hand $hand */
-        $hand = $this->currentTable->{'get'.$side}();
-        ${'hand'.$side} = $hand->play($turn->getCard());    // @phpstan-ignore-line variable.dynamicName
-        $this->currentTable = new Table($nordHand, $eastHand, $southHand, $westHand);
+        $sideName = $turn->getSide()->getName();
+        switch ($sideName) {
+            case 'North':
+                $northHand = $northHand->play($turn->getCard());
+                break;
+            case 'East':
+                $eastHand = $eastHand->play($turn->getCard());
+                break;
+            case 'South':
+                $southHand = $southHand->play($turn->getCard());
+                break;
+            case 'West':
+                $westHand = $westHand->play($turn->getCard());
+                break;
+            default:
+                throw new \RuntimeException(\sprintf('Unknown side name: %s', $sideName));
+        }
+        $this->currentTable = new Table($northHand, $eastHand, $southHand, $westHand);
         $this->updateWins();
     }
 
