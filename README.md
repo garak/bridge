@@ -58,6 +58,73 @@ $game->addTurn(new Turn($game, 4, Card::fromRankSuit('Ts')));
 echo $game->getWins()->getEastWest();   // will output "1", since West won the first turn
 ```
 
-## TODO
+## Auction
 
-Auction implementation is still to be done...
+The library exposes an abstract `Garak\Bridge\Auction` class that represents one auction entry (a bid or a pass).
+
+Key points
+
+- The `Auction` constructor takes the `Game`, the auction `order`, an optional numeric `value` (bid level), and an optional `Garak\Card\Suit` for trump.
+- A `null` value is treated as a pass.
+- When an `Auction` is created, it records the bidding side, advances to the next side, and calls `Game::addAuction()`.
+
+Implement a concrete auction class
+
+`Auction` is abstract, so your application must provide a concrete implementation:
+
+```php
+<?php
+
+namespace App;
+
+use Garak\Bridge\Auction;
+
+final class Contract extends Auction
+{
+	public function __toString(): string
+	{
+		return (string) $this->getValue() . ($this->getTrump() ? (string) $this->getTrump() : '');
+	}
+}
+```
+
+Use auctions in a game
+
+```php
+<?php
+
+use App\Contract;
+use App\Game;      // your concrete class extending Garak\Bridge\Game
+use App\Player;    // your concrete class extending Garak\Bridge\Player
+use Garak\Bridge\Side;
+use Garak\Card\Suit;
+
+$table = /* create Table as in the Usage example above */;
+$game = new Game($table, startingSide: new Side('N'));
+
+$game->join(new Player('North'), new Side('N'));
+$game->join(new Player('East'), new Side('E'));
+$game->join(new Player('South'), new Side('S'));
+$game->join(new Player('West'), new Side('W'));
+
+new Contract($game, 1, 1, new Suit('d')); // 1d from North
+new Contract($game, 2, null, null);       // pass from East
+new Contract($game, 3, null, null);       // pass from South
+new Contract($game, 4, null, null);       // pass from West (auction ends)
+
+$contract = $game->getAuction(); // last valid auction, or null
+$trump = $game->getTrump();      // Suit|null
+$dummy = $game->getDummySide();  // Side|null
+
+if (null !== $contract) {
+	echo (string) $contract; // e.g. "1d"
+}
+```
+
+Auction ordering rules (summary)
+
+- Same trump suit: higher `value` wins.
+- Different suits: suit ranking is used (club < diamond < heart < spade < no-trump).
+- `Game::addAuction()` throws `DomainException` when a bid is not greater than the previous valid one.
+- The auction is considered ended after three consecutive passes **after at least one non-pass bid**. If everyone passes from the start, there is no winning contract.
+

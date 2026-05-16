@@ -57,6 +57,9 @@ abstract class Auction implements \Stringable
     public function isGreaterThan(self $auction): bool
     {
         $auctionTrump = $auction->getTrump();
+        if (null === $this->trump && null === $auctionTrump) {
+            return $this->value > $auction->getValue();
+        }
         if (null !== $this->trump && null !== $auctionTrump && $this->trump->isEqual($auctionTrump)) {
             // if trump suit is the same, check the value
             return $this->value > $auction->getValue();

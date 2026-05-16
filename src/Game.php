@@ -221,6 +221,8 @@ abstract class Game
     public function addAuction(Auction $auction): void
     {
         if (!$this->isGreaterThanPrevious($auction)) {
+            // Auction constructor advances side before validation; rollback on rejection.
+            $this->currentSide = $auction->getSide();
             throw new \DomainException('Auction must be greater than previous one.');
         }
         $this->auctions->add($auction);
@@ -410,21 +412,28 @@ abstract class Game
      */
     private function getAuctionSide(): Side
     {
-        // with less than 2 full turns, last auction wins
-        if ($this->auctions->count() < 7) {
-            return $this->getLastValidAuction()->getSide();
-        }
-        // if winner's mate proposed trump, side is his/her one
-        $last7 = \array_slice(\iterator_to_array($this->getOrderedAuctions()), 0, 7);
-        /** @var Auction $mateLast */
-        $mateLast = $last7[6];
-        /** @var Auction $last */
-        $last = $last7[3];
         $lastValidAuction = $this->getLastValidAuction();
-        if ($mateLast->isSameSuit($last)) {
-            return $lastValidAuction->getSide()->getOpposing();
+        $winningSide = $lastValidAuction->getSide();
+        $mateSide = $winningSide->getOpposing();
+
+        $auctions = \iterator_to_array($this->auctions);
+        \usort($auctions, static fn (Auction $a, Auction $b): int => $a->getOrder() <=> $b->getOrder());
+
+        foreach ($auctions as $auction) {
+            if (null === $auction->getValue()) {
+                continue;
+            }
+            $isNoTrump = null === $lastValidAuction->getTrump() && null === $auction->getTrump();
+            $isSameSuit = null !== $lastValidAuction->getTrump() && $auction->isSameSuit($lastValidAuction);
+            if (!$isNoTrump && !$isSameSuit) {
+                continue;
+            }
+
+            if ($auction->getSide()->is((string) $winningSide) || $auction->getSide()->is((string) $mateSide)) {
+                return $auction->getSide();
+            }
         }
 
-        return $lastValidAuction->getSide();
+        return $winningSide;
     }
 }
