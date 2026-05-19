@@ -34,4 +34,45 @@ final class AuctionTest extends TestCase
         $auction5 = new StubAuction($game, 5, 2, null);
         self::assertTrue($auction5->isGreaterThan($auction4));
     }
+
+    public function testIsSameSuitWithBothNull(): void
+    {
+        $game = new StubGame(self::getTable(), new Side('N'));
+        $a1 = new StubAuction($game, 1, null, null);
+        $a2 = new StubAuction($game, 2, null, null);
+
+        self::assertFalse($a1->isSameSuit($a2));
+    }
+
+    public function testIsSameSuitWithOneNull(): void
+    {
+        $game = new StubGame(self::getTable(), new Side('N'));
+        $a1 = new StubAuction($game, 1, null, null);
+        $a2 = new StubAuction($game, 2, 3, new Suit('d'));
+
+        self::assertFalse($a2->isSameSuit($a1));
+    }
+
+    public function testGetSuitValueForPassAndNoTrumpBid(): void
+    {
+        $game = new StubGame(self::getTable(), new Side('N'));
+        $pass = new StubAuction($game, 1, null, null);
+        $noTrump = new StubAuction($game, 2, 1, null);
+
+        $otherGame = new StubGame(self::getTable(), new Side('N'));
+        $clubs = new StubAuction($otherGame, 1, 2, new Suit('c'));
+
+        self::assertEquals(16, $pass->getSuitValue());
+        self::assertEquals(16, $noTrump->getSuitValue());
+        self::assertEquals((new Suit('c'))->getInt(), $clubs->getSuitValue());
+    }
+
+    public function testNoTrumpComparisonUsesBidValueWhenBothNoTrump(): void
+    {
+        $game = new StubGame(self::getTable(), new Side('N'));
+        $oneNoTrump = new StubAuction($game, 1, 1, null);
+        $threeNoTrump = new StubAuction($game, 2, 3, null);
+
+        self::assertTrue($threeNoTrump->isGreaterThan($oneNoTrump));
+    }
 }
