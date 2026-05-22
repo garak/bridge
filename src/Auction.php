@@ -21,7 +21,7 @@ abstract class Auction implements \Stringable
 
     public function __toString(): string
     {
-        return $this->value.$this->trump;
+        return $this->value.(null !== $this->trump ? $this->trump->value : '');
     }
 
     public function getGame(): Game
@@ -60,7 +60,7 @@ abstract class Auction implements \Stringable
         if (null === $this->trump && null === $auctionTrump) {
             return $this->value > $auction->getValue();
         }
-        if (null !== $this->trump && null !== $auctionTrump && $this->trump->isEqual($auctionTrump)) {
+        if (null !== $this->trump && null !== $auctionTrump && $this->trump === $auctionTrump) {
             // if trump suit is the same, check the value
             return $this->value > $auction->getValue();
         }
@@ -70,13 +70,10 @@ abstract class Auction implements \Stringable
 
     public function isSameSuit(self $auction): bool
     {
-        if (null === $this->trump && null === $auction->getTrump()) {
-            return false;
-        }
         if (null === $this->trump || null === $auction->getTrump()) {
             return false;
         }
 
-        return $this->trump->isEqual($auction->getTrump());
+        return $this->trump === $auction->getTrump();
     }
 }

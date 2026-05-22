@@ -62,10 +62,10 @@ final class HandTest extends TestCase
     public function testSorting(): void
     {
         $hand = Hand::createFromString('6s,4h,3s,Td,6c,3d,3h,Kc,Qc,Tc,7d,2c,6d');
-        $hand->sort(new Suit('d'));
+        $hand->sort(Suit::Diamonds);
         self::assertEquals('Td,7d,6d,3d,6s,3s,4h,3h,Kc,Qc,Tc,6c,2c', (string) $hand);
-        $hand->sort(new Suit('d'));
-        $hand->sort(new Suit('h'));
+        $hand->sort(Suit::Diamonds);
+        $hand->sort(Suit::Hearts);
         self::assertEquals('4h,3h,6s,3s,Td,7d,6d,3d,Kc,Qc,Tc,6c,2c', (string) $hand);
     }
 }

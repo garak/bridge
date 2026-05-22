@@ -4,6 +4,7 @@ namespace Garak\Bridge;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Garak\Card\Card;
 use Garak\Card\Suit;
 
 abstract class Game
@@ -43,10 +44,10 @@ abstract class Game
 
     public function join(Player $player, Side $side): void
     {
-        if (null !== $this->{'player'.$side}) {
+        if (null !== $this->getPlayerForSide($side)) {
             throw new \DomainException('Side is already taken.');
         }
-        $this->{'player'.$side} = $player;
+        $this->setPlayerForSide($side, $player);
     }
 
     public function advance(): void
@@ -61,7 +62,12 @@ abstract class Game
 
     public function getCurrentHand(): Hand
     {
-        return $this->currentTable->{'get'.$this->currentSide->getName()}();
+        return match ($this->currentSide) {
+            Side::North => $this->currentTable->getNorth(),
+            Side::East => $this->currentTable->getEast(),
+            Side::South => $this->currentTable->getSouth(),
+            Side::West => $this->currentTable->getWest(),
+        };
     }
 
     public function getStartingTable(): Table
@@ -97,7 +103,9 @@ abstract class Game
     public function hasPlayer(Player $player, ?Side $side = null): bool
     {
         if (null !== $side) {
-            return null !== $this->{'player'.$side} && $this->{'player'.$side}->isEqual($player);
+            $sidePlayer = $this->getPlayerForSide($side);
+
+            return null !== $sidePlayer && $sidePlayer->isEqual($player);
         }
 
         return $this->playerN?->isEqual($player)    // @phpstan-ignore-line booleanOr.leftNotBoolean
@@ -109,11 +117,13 @@ abstract class Game
 
     public function getPlayingPlayer(): Player
     {
-        if (null !== $this->dummy && $this->{'player'.$this->currentSide}->isEqual($this->dummy)) {
-            return $this->{'player'.$this->currentSide->getOpposing()};
+        $currentPlayer = $this->getPlayerForSide($this->currentSide);
+        if (null !== $this->dummy && null !== $currentPlayer && $currentPlayer->isEqual($this->dummy)) {
+            return $this->getPlayerForSide($this->currentSide->getOpposing())
+                ?? throw new \RuntimeException('No player found for opposing side.');
         }
 
-        return $this->{'player'.$this->currentSide};
+        return $currentPlayer ?? throw new \RuntimeException('No player found for current side.');
     }
 
     public function isInTurn(Player $player): bool
@@ -134,14 +144,7 @@ abstract class Game
     /** @return array<int, Side> */
     public function getFreeSides(): array
     {
-        $sides = [];
-        foreach (Side::SIDES as $short => $name) {
-            if (null === $this->{'player'.$short}) {
-                $sides[] = new Side($short);
-            }
-        }
-
-        return $sides;
+        return \array_values(\array_filter(Side::cases(), fn (Side $side): bool => null === $this->getPlayerForSide($side)));
     }
 
     public function getDummySide(): ?Side
@@ -149,24 +152,19 @@ abstract class Game
         if (null === $this->dummy) {
             return null;
         }
-        foreach (Side::SIDES as $short => $name) {
-            /** @var Player|null $player */
-            $player = $this->{'player'.$short};
-            if (null !== $player && $player->isEqual($this->dummy)) {
-                return new Side($short);
-            }
-        }
+        $dummy = $this->dummy;
 
-        return null;
+        return \array_find(Side::cases(), fn (Side $side): bool => ($p = $this->getPlayerForSide($side)) !== null && $p->isEqual($dummy));
     }
 
     public function isDummySide(Side $side): bool
     {
-        if (null === $this->dummy || null === $this->{'player'.$side}) {
+        $player = $this->getPlayerForSide($side);
+        if (null === $this->dummy || null === $player) {
             return false;
         }
 
-        return $this->dummy->isEqual($this->{'player'.$side});
+        return $this->dummy->isEqual($player);
     }
 
     public function isDummy(Player $player): bool
@@ -191,23 +189,12 @@ abstract class Game
         $eastHand = $this->currentTable->getEast();
         $southHand = $this->currentTable->getSouth();
         $westHand = $this->currentTable->getWest();
-        $sideName = $turn->getSide()->getName();
-        switch ($sideName) {
-            case 'North':
-                $northHand = $northHand->play($turn->getCard());
-                break;
-            case 'East':
-                $eastHand = $eastHand->play($turn->getCard());
-                break;
-            case 'South':
-                $southHand = $southHand->play($turn->getCard());
-                break;
-            case 'West':
-                $westHand = $westHand->play($turn->getCard());
-                break;
-            default:
-                throw new \RuntimeException(\sprintf('Unknown side name: %s', $sideName));
-        }
+        match ($turn->getSide()) {
+            Side::North => $northHand = $northHand->play($turn->getCard()),
+            Side::East => $eastHand = $eastHand->play($turn->getCard()),
+            Side::South => $southHand = $southHand->play($turn->getCard()),
+            Side::West => $westHand = $westHand->play($turn->getCard()),
+        };
         $this->currentTable = new Table($northHand, $eastHand, $southHand, $westHand);
         $this->updateWins();
     }
@@ -232,7 +219,7 @@ abstract class Game
             $side = $this->getAuctionSide();
             $this->currentSide = $side->getNext();
             $dummySide = $side->getOpposing();
-            $this->dummy = $this->{'player'.$dummySide};
+            $this->dummy = $this->getPlayerForSide($dummySide);
         }
     }
 
@@ -293,31 +280,25 @@ abstract class Game
         }
         $openingSuit = $this->getOpeningSuit($order);
         $playingSuit = $turn->getCard()->getSuit();
-        if ($playingSuit->isEqual($openingSuit)) {
+        if ($playingSuit === $openingSuit) {
             // playing turn has same suit as the opening one. OK!
             return;
         }
         // player had opening suit, but they played another one. This is forbidden!
-        $side = $turn->getSide()->getName();
-        $currentPlayerCards = $this->currentTable->{'get'.$side}()->getCards();
-        foreach ($currentPlayerCards as $card) {
-            if ($card->getSuit()->isEqual($openingSuit)) {
-                $error = 'Cannot play suit %s, because opening suit is %s.';
-                throw new \DomainException(\sprintf($error, $playingSuit->getSymbol(), $openingSuit->getSymbol()));
-            }
+        $currentPlayerCards = match ($turn->getSide()) {
+            Side::North => $this->currentTable->getNorth()->getCards(),
+            Side::East => $this->currentTable->getEast()->getCards(),
+            Side::South => $this->currentTable->getSouth()->getCards(),
+            Side::West => $this->currentTable->getWest()->getCards(),
+        };
+        if (null !== \array_find($currentPlayerCards, static fn (Card $c): bool => $c->getSuit() === $openingSuit)) {
+            throw new \DomainException(\sprintf('Cannot play suit %s, because opening suit is %s.', $playingSuit->getSymbol(), $openingSuit->getSymbol()));
         }
     }
 
     private function getOpeningSuit(int $order): Suit
     {
-        $rest = $order % 4;
-        if (2 === $rest) {
-            $opt = $order - 1;
-        } elseif (3 === $rest) {
-            $opt = $order - 2;
-        } else {
-            $opt = $order - 3;
-        }
+        $opt = $order - ($order - 1) % 4;
         /** @var Turn $previousTurn */
         $previousTurn = $this->turns->findFirst(static fn (int $k, Turn $t): bool => $t->getOrder() === $opt);
 
@@ -336,15 +317,20 @@ abstract class Game
         // create a trick with cards played in turns
         $cards = [];
         foreach ($tableTurns as $turn) {
-            $cards[$turn->getSide()->getSide()] = $turn->getCard();
+            $cards[$turn->getSide()->value] = $turn->getCard();
         }
         $trick = new Trick($cards);
         $winner = $trick->getWinningCard($this->getTrump());
-        /** @var string $winnerSide */
-        $winnerSide = \array_search($winner, $cards, true);
-        $side = \strtolower(Side::SIDES[$winnerSide]);
-        $this->wins = $this->wins->{$side.'Wins'}();
-        $this->currentSide = new Side($winnerSide);
+        /** @var string $winnerSideValue */
+        $winnerSideValue = \array_search($winner, $cards, true);
+        $winnerSide = Side::from($winnerSideValue);
+        $this->wins = match ($winnerSide) {
+            Side::North => $this->wins->northWins(),
+            Side::East => $this->wins->eastWins(),
+            Side::South => $this->wins->southWins(),
+            Side::West => $this->wins->westWins(),
+        };
+        $this->currentSide = $winnerSide;
     }
 
     /**
@@ -370,15 +356,9 @@ abstract class Game
             return true;    // first auction, or pass
         }
         $last3 = \array_slice(\iterator_to_array($this->getOrderedAuctions()), 0, 3);
-        foreach ($last3 as $previous) {
-            if (null === $previous->getValue()) {
-                continue;
-            }
+        $previous = \array_find($last3, static fn (Auction $a): bool => null !== $a->getValue());
 
-            return $auction->isGreaterThan($previous);
-        }
-
-        return true;
+        return null === $previous || $auction->isGreaterThan($previous);
     }
 
     /**
@@ -390,13 +370,8 @@ abstract class Game
             return false;
         }
         $last3 = \array_slice(\iterator_to_array($this->getOrderedAuctions()), 0, 3);
-        foreach ($last3 as $auction) {
-            if (null !== $auction->getValue()) {
-                return false;
-            }
-        }
 
-        return true;
+        return null === \array_find($last3, static fn (Auction $a): bool => null !== $a->getValue());
     }
 
     /**
@@ -419,21 +394,36 @@ abstract class Game
         $auctions = \iterator_to_array($this->auctions);
         \usort($auctions, static fn (Auction $a, Auction $b): int => $a->getOrder() <=> $b->getOrder());
 
-        foreach ($auctions as $auction) {
+        $found = \array_find($auctions, static function (Auction $auction) use ($lastValidAuction, $winningSide, $mateSide): bool {
             if (null === $auction->getValue()) {
-                continue;
+                return false;
             }
             $isNoTrump = null === $lastValidAuction->getTrump() && null === $auction->getTrump();
             $isSameSuit = null !== $lastValidAuction->getTrump() && $auction->isSameSuit($lastValidAuction);
-            if (!$isNoTrump && !$isSameSuit) {
-                continue;
-            }
 
-            if ($auction->getSide()->is((string) $winningSide) || $auction->getSide()->is((string) $mateSide)) {
-                return $auction->getSide();
-            }
-        }
+            return ($isNoTrump || $isSameSuit) && ($auction->getSide() === $winningSide || $auction->getSide() === $mateSide);
+        });
 
-        return $winningSide;
+        return $found?->getSide() ?? $winningSide;
+    }
+
+    private function getPlayerForSide(Side $side): ?Player
+    {
+        return match ($side) {
+            Side::North => $this->playerN,
+            Side::East => $this->playerE,
+            Side::South => $this->playerS,
+            Side::West => $this->playerW,
+        };
+    }
+
+    private function setPlayerForSide(Side $side, Player $player): void
+    {
+        match ($side) {
+            Side::North => $this->playerN = $player,
+            Side::East => $this->playerE = $player,
+            Side::South => $this->playerS = $player,
+            Side::West => $this->playerW = $player,
+        };
     }
 }

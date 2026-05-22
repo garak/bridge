@@ -15,16 +15,16 @@ final class PlayerTest extends TestCase
     public function testIsPlaying(): void
     {
         $player = new StubPlayer('John Wayne');
-        $game = new StubGame(self::getTable(), new Side('W'));
+        $game = new StubGame(self::getTable(), Side::West);
         self::assertFalse($player->isPlaying($game));
     }
 
     public function testIsSide(): void
     {
         $player = new StubPlayer('John Wayne');
-        $game = new StubGame(self::getTable(), new Side('W'));
-        $game->join($player, new Side('E'));
-        self::assertTrue($player->isSide($game, new Side('E')));
-        self::assertFalse($player->isSide($game, new Side('W')));
+        $game = new StubGame(self::getTable(), Side::West);
+        $game->join($player, Side::East);
+        self::assertTrue($player->isSide($game, Side::East));
+        self::assertFalse($player->isSide($game, Side::West));
     }
 }

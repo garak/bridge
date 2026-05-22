@@ -20,14 +20,38 @@ final class TrickTest extends TestCase
     public function testGetWinningCardWithOpeningTrump(): void
     {
         $trick = new Trick([Card::fromRankSuit('2h'), Card::fromRankSuit('6d')]);
-        $card = $trick->getWinningCard(new Suit('h'));
+        $card = $trick->getWinningCard(Suit::Hearts);
         self::assertEquals('2h', (string) $card);
     }
 
     public function testGetWinningCardWithTrump(): void
     {
         $trick = new Trick([Card::fromRankSuit('6h'), Card::fromRankSuit('2d')]);
-        $card = $trick->getWinningCard(new Suit('d'));
+        $card = $trick->getWinningCard(Suit::Diamonds);
         self::assertEquals('2d', (string) $card);
+    }
+
+    /**
+     * Regression: trump is led but an off-suit card with a higher suit-int (Spades=8 > Diamonds=2)
+     * is discarded. The trump card must still win.
+     */
+    public function testTrumpLedBeatsHigherSuitIntDiscard(): void
+    {
+        // Diamonds trump is led; Spades has a higher getInt() but must not win
+        $trick = new Trick([Card::fromRankSuit('2d'), Card::fromRankSuit('6s')]);
+        $card = $trick->getWinningCard(Suit::Diamonds);
+        self::assertEquals('2d', (string) $card);
+    }
+
+    /**
+     * Regression: no trump card is played, so the highest card of the led suit wins;
+     * an off-suit discard with a higher suit-int must not win.
+     */
+    public function testLedSuitWinsWhenNoTrumpPlayed(): void
+    {
+        // Trump is Clubs, but none played; Hearts led, Spades discarded (Spades getInt()=8 > Hearts=4)
+        $trick = new Trick([Card::fromRankSuit('6h'), Card::fromRankSuit('As')]);
+        $card = $trick->getWinningCard(Suit::Clubs);
+        self::assertEquals('6h', (string) $card);
     }
 }

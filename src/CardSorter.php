@@ -11,22 +11,19 @@ final class CardSorter
     public static function sort(array &$cards, ?Suit $trump): void
     {
         \usort($cards, static function (Card $card2, Card $card1) use ($trump): int {
-            if (null !== $trump && ($card1->getSuit()->isEqual($trump) || $card2->getSuit()->isEqual($trump))) {
-                if ($card1->getSuit()->isEqual($trump) && !$card2->getSuit()->isEqual($trump)) {
-                    return 1;
-                }
-                if (!$card1->getSuit()->isEqual($trump) && $card2->getSuit()->isEqual($trump)) {
-                    return -1;
-                }
+            $suit1 = $card1->getSuit();
+            $suit2 = $card2->getSuit();
+            $rank1 = $card1->getRank()->getInt();
+            $rank2 = $card2->getRank()->getInt();
 
-                return $card1->getRank()->getInt() <=> $card2->getRank()->getInt();
+            if (null !== $trump && ($suit1 === $trump || $suit2 === $trump)) {
+                // trump cards sort first; when both are trump, higher rank wins
+                $suitOrder = ($suit1 === $trump) <=> ($suit2 === $trump);
+
+                return 0 !== $suitOrder ? $suitOrder : $rank1 <=> $rank2;
             }
 
-            if ($card1->getSuit()->isEqual($card2->getSuit())) {
-                return $card1->getRank()->getInt() <=> $card2->getRank()->getInt();
-            }
-
-            return $card1->getSuit()->getInt() <=> $card2->getSuit()->getInt();
+            return $suit1 !== $suit2 ? $suit1->getInt() <=> $suit2->getInt() : $rank1 <=> $rank2;
         });
     }
 }
