@@ -5,11 +5,11 @@ namespace Garak\Bridge;
 /**
  * Represent the number of wins of the two couples of players.
  */
-final class Wins
+final readonly class Wins
 {
     public function __construct(
-        private readonly int $northSouth = 0,
-        private readonly int $eastWest = 0,
+        private int $northSouth = 0,
+        private int $eastWest = 0,
     ) {
     }
 

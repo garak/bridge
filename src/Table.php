@@ -8,13 +8,13 @@ use Garak\Card\Suit;
 /**
  * A Table is composed by Hands assigned to the four Sides.
  */
-final class Table
+final readonly class Table
 {
     public function __construct(
-        private readonly Hand $north,
-        private readonly Hand $east,
-        private readonly Hand $south,
-        private readonly Hand $west,
+        private Hand $north,
+        private Hand $east,
+        private Hand $south,
+        private Hand $west,
         bool $check = true,
     ) {
         if ($check) {
@@ -73,10 +73,10 @@ final class Table
      */
     private static function check(Hand $trick1, Hand $trick2): void
     {
-        $callback = static fn (Card $card1, Card $card2): int => \strcasecmp($card1, $card2);
+        $callback = static fn (Card $c1, Card $c2): int => \strcasecmp($c1, $c2);
         $intersect = \array_uintersect($trick1->getCards(), $trick2->getCards(), $callback);
         if (\count($intersect) > 0) {
-            $cards = \array_map(static fn (Card $card): string => $card->toText(), $intersect);
+            $cards = \array_map(static fn (Card $c): string => $c->toText(), $intersect);
             $error = 'Cannot assign same cards: %s';
             throw new \InvalidArgumentException(\sprintf($error, \implode(', ', $cards)));
         }

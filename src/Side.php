@@ -2,58 +2,40 @@
 
 namespace Garak\Bridge;
 
-final class Side implements \Stringable
+enum Side: string
 {
-    public const SIDES = ['N' => 'North', 'E' => 'East', 'S' => 'South', 'W' => 'West'];
-
-    public function __construct(private readonly string $side)
-    {
-        if (!isset(self::SIDES[$side])) {
-            throw new \InvalidArgumentException(\sprintf('Invalid side: %s.', $side));
-        }
-    }
-
-    public function __toString(): string
-    {
-        return $this->side;
-    }
-
-    public function getSide(): string
-    {
-        return $this->side;
-    }
+    case North = 'N';
+    case East = 'E';
+    case South = 'S';
+    case West = 'W';
 
     public function getName(): string
     {
-        return self::SIDES[$this->side];
+        return $this->name;
     }
 
     public function getNext(): self
     {
-        $next = [
-            'N' => 'E',
-            'E' => 'S',
-            'S' => 'W',
-            'W' => 'N',
-        ];
-
-        return new self($next[$this->side]);
+        return match ($this) {
+            self::North => self::East,
+            self::East => self::South,
+            self::South => self::West,
+            self::West => self::North,
+        };
     }
 
     public function getOpposing(): self
     {
-        $oppose = [
-            'N' => 'S',
-            'E' => 'W',
-            'S' => 'N',
-            'W' => 'E',
-        ];
-
-        return new self($oppose[$this->side]);
+        return match ($this) {
+            self::North => self::South,
+            self::East => self::West,
+            self::South => self::North,
+            self::West => self::East,
+        };
     }
 
     public function is(string $side): bool
     {
-        return $this->side === $side;
+        return $this->value === $side;
     }
 }

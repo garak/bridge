@@ -46,11 +46,11 @@ $east  = Hand::createFromString('9d,Jh,5s,8c,Ks,4s,5h,4d,8s,Jc,2d,2s,Qs');
 $south = Hand::createFromString('7h,Kd,Js,2h,Th,Qh,7s,Ac,3c,Ad,7c,9s,6h');
 $west  = Hand::createFromString('9h,Ts,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d');
 $table = new Table($north, $east, $south, $west);
-$game  = new Game($table, startingSide: new Side('N'));
-$game->join(new Player('John Doe'), new Side('N'));
-$game->join(new Player('Will Riker'), new Side('E'));
-$game->join(new Player('Yoda'), new Side('S'));
-$game->join(new Player('Peter Venkman'), new Side('W'));
+$game  = new Game($table, startingSide: Side::North);
+$game->join(new Player('John Doe'), Side::North);
+$game->join(new Player('Will Riker'), Side::East);
+$game->join(new Player('Yoda'), Side::South);
+$game->join(new Player('Peter Venkman'), Side::West);
 $game->addTurn(new Turn($game, 1, Card::fromRankSuit('6s')));
 $game->addTurn(new Turn($game, 2, Card::fromRankSuit('4s')));
 $game->addTurn(new Turn($game, 3, Card::fromRankSuit('7s')));
@@ -83,7 +83,7 @@ final class Contract extends Auction
 {
 	public function __toString(): string
 	{
-		return (string) $this->getValue() . ($this->getTrump() ? (string) $this->getTrump() : '');
+		return (string) $this->getValue() . ($this->getTrump() !== null ? $this->getTrump()->value : '');
 	}
 }
 ```
@@ -100,14 +100,14 @@ use Garak\Bridge\Side;
 use Garak\Card\Suit;
 
 $table = /* create Table as in the Usage example above */;
-$game = new Game($table, startingSide: new Side('N'));
+$game = new Game($table, startingSide: Side::North);
 
-$game->join(new Player('North'), new Side('N'));
-$game->join(new Player('East'), new Side('E'));
-$game->join(new Player('South'), new Side('S'));
-$game->join(new Player('West'), new Side('W'));
+$game->join(new Player('North'), Side::North);
+$game->join(new Player('East'), Side::East);
+$game->join(new Player('South'), Side::South);
+$game->join(new Player('West'), Side::West);
 
-new Contract($game, 1, 1, new Suit('d')); // 1d from North
+new Contract($game, 1, 1, Suit::Diamonds); // 1d from North
 new Contract($game, 2, null, null);       // pass from East
 new Contract($game, 3, null, null);       // pass from South
 new Contract($game, 4, null, null);       // pass from West (auction ends)

@@ -7,26 +7,25 @@ use PHPUnit\Framework\TestCase;
 
 final class SideTest extends TestCase
 {
-    public function testInvalidSuit(): void
+    public function testInvalidSide(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid side: foo.');
-        new Side('foo');
+        $this->expectException(\ValueError::class);
+        Side::from('foo');
     }
 
     public function testGetNext(): void
     {
-        self::assertTrue((new Side('N'))->getNext()->is('E'));
-        self::assertTrue((new Side('E'))->getNext()->is('S'));
-        self::assertTrue((new Side('S'))->getNext()->is('W'));
-        self::assertTrue((new Side('W'))->getNext()->is('N'));
+        self::assertTrue(Side::North->getNext()->is('E'));
+        self::assertTrue(Side::East->getNext()->is('S'));
+        self::assertTrue(Side::South->getNext()->is('W'));
+        self::assertTrue(Side::West->getNext()->is('N'));
     }
 
     public function testGetOpposing(): void
     {
-        self::assertTrue((new Side('N'))->getOpposing()->is('S'));
-        self::assertTrue((new Side('E'))->getOpposing()->is('W'));
-        self::assertTrue((new Side('S'))->getOpposing()->is('N'));
-        self::assertTrue((new Side('W'))->getOpposing()->is('E'));
+        self::assertTrue(Side::North->getOpposing()->is('S'));
+        self::assertTrue(Side::East->getOpposing()->is('W'));
+        self::assertTrue(Side::South->getOpposing()->is('N'));
+        self::assertTrue(Side::West->getOpposing()->is('E'));
     }
 }
