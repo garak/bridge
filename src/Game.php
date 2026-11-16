@@ -183,7 +183,14 @@ abstract class Game
 
     public function addTurn(Turn $turn): void
     {
-        $this->checkTurn($turn);
+        try {
+            $this->checkTurn($turn);
+        } catch (\DomainException|\InvalidArgumentException $exception) {
+            // Turn constructor advances side before validation; rollback on rejection.
+            $this->currentSide = $turn->getSide();
+
+            throw $exception;
+        }
         $this->turns->add($turn);
         $northHand = $this->currentTable->getNorth();
         $eastHand = $this->currentTable->getEast();
@@ -274,35 +281,24 @@ abstract class Game
 
     private function checkTurn(Turn $turn): void
     {
-        $order = $turn->getOrder();
-        if (1 === $order % 4) {
-            return; // opening doesn't need any check
-        }
-        $openingSuit = $this->getOpeningSuit($order);
-        $playingSuit = $turn->getCard()->getSuit();
-        if ($playingSuit === $openingSuit) {
-            // playing turn has same suit as the opening one. OK!
-            return;
-        }
-        // player had opening suit, but they played another one. This is forbidden!
-        $currentPlayerCards = match ($turn->getSide()) {
-            Side::North => $this->currentTable->getNorth()->getCards(),
-            Side::East => $this->currentTable->getEast()->getCards(),
-            Side::South => $this->currentTable->getSouth()->getCards(),
-            Side::West => $this->currentTable->getWest()->getCards(),
+        $card = $turn->getCard();
+        $hand = match ($turn->getSide()) {
+            Side::North => $this->currentTable->getNorth(),
+            Side::East => $this->currentTable->getEast(),
+            Side::South => $this->currentTable->getSouth(),
+            Side::West => $this->currentTable->getWest(),
         };
-        if (null !== \array_find($currentPlayerCards, static fn (Card $c): bool => $c->getSuit() === $openingSuit)) {
-            throw new \DomainException(\sprintf('Cannot play suit %s, because opening suit is %s.', $playingSuit->getSymbol(), $openingSuit->getSymbol()));
+        if (!$hand->has($card)) {
+            throw new \InvalidArgumentException(\sprintf('Card %s not present in hand (%s).', $card, $hand));
         }
-    }
-
-    private function getOpeningSuit(int $order): Suit
-    {
-        $opt = $order - ($order - 1) % 4;
-        /** @var Turn $previousTurn */
-        $previousTurn = $this->turns->findFirst(static fn (int $k, Turn $t): bool => $t->getOrder() === $opt);
-
-        return $previousTurn->getCard()->getSuit();
+        if (1 === $turn->getOrder() % 4) {
+            return; // opening can be any card in hand
+        }
+        $trick = new Trick(\array_map(static fn (Turn $t): Card => $t->getCard(), $this->getTableTurns()));
+        if (!$trick->canPlay($card, $hand)) {
+            $openingSuit = $trick->getLedSuit() ?? throw new \LogicException('No opening card in trick.');
+            throw new \DomainException(\sprintf('Cannot play suit %s, because opening suit is %s.', $card->getSuit()->getSymbol(), $openingSuit->getSymbol()));
+        }
     }
 
     /**
@@ -320,10 +316,7 @@ abstract class Game
             $cards[$turn->getSide()->value] = $turn->getCard();
         }
         $trick = new Trick($cards);
-        $winner = $trick->getWinningCard($this->getTrump());
-        /** @var string $winnerSideValue */
-        $winnerSideValue = \array_search($winner, $cards, true);
-        $winnerSide = Side::from($winnerSideValue);
+        $winnerSide = Side::from((string) $trick->getWinningKey($this->getTrump()));
         $this->wins = match ($winnerSide) {
             Side::North => $this->wins->northWins(),
             Side::East => $this->wins->eastWins(),
