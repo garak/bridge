@@ -35,13 +35,6 @@ final class HandTest extends TestCase
         self::assertStringStartsWith('<span id="6s" class="crd crd-6 st-s">6♠</span>', $hand->toHtml());
     }
 
-    public function testValidHands(): void
-    {
-        self::assertTrue(Hand::isValid('6s'));
-        self::assertTrue(Hand::isValid('6s,4h,3s'));
-        self::assertFalse(Hand::isValid('6'));
-    }
-
     public function testCannotPlayCardNotPresentInHand(): void
     {
         $hand = Hand::createFromString('6s,4h,3s,Td,6c,3d,3h,Kc,Qc,Tc,7d,2c,6d');

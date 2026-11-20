@@ -64,7 +64,7 @@ final class AuctionTest extends TestCase
 
         self::assertEquals(16, $pass->getSuitValue());
         self::assertEquals(16, $noTrump->getSuitValue());
-        self::assertEquals(Suit::Clubs->getInt(), $clubs->getSuitValue());
+        self::assertEquals(1, $clubs->getSuitValue());
     }
 
     public function testNoTrumpComparisonUsesBidValueWhenBothNoTrump(): void

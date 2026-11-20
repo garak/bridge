@@ -98,6 +98,95 @@ final class GameTest extends TestCase
         new Turn($game, 2, Card::fromRankSuit('9d'));
     }
 
+    public function testCannotPlayAbsentCardWhileHoldingLedSuit(): void
+    {
+        $game = new StubGame(self::getFixedTable(), Side::North);
+        new Turn($game, 1, Card::fromRankSuit('6s'));
+        $eastHand = (string) $game->getCurrentHand();
+        try {
+            new Turn($game, 2, Card::fromRankSuit('3d'));
+            self::fail('Absent card must be rejected.');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertStringStartsWith('Card 3d not present in hand', $exception->getMessage());
+        }
+        self::assertCount(1, $game->getTurns());
+        self::assertEquals(Side::East, $game->getCurrentSide());
+        self::assertEquals($eastHand, (string) $game->getCurrentHand());
+        new Turn($game, 2, Card::fromRankSuit('4s'));
+        self::assertCount(2, $game->getTurns());
+    }
+
+    public function testCannotOpenWithAbsentCard(): void
+    {
+        $game = new StubGame(self::getFixedTable(), Side::North);
+        try {
+            new Turn($game, 1, Card::fromRankSuit('9d'));
+            self::fail('Absent card must be rejected.');
+        } catch (\InvalidArgumentException) {
+        }
+        self::assertCount(0, $game->getTurns());
+        self::assertEquals(Side::North, $game->getCurrentSide());
+        self::assertCount(13, $game->getCurrentHand());
+    }
+
+    public function testRevokeInSecondTrickKeepsSide(): void
+    {
+        $game = new StubGame(self::getFixedTable(), Side::North);
+        new Turn($game, 1, Card::fromRankSuit('6s'));
+        new Turn($game, 2, Card::fromRankSuit('4s'));
+        new Turn($game, 3, Card::fromRankSuit('7s'));
+        new Turn($game, 4, Card::fromRankSuit('As'));
+        self::assertEquals(Side::West, $game->getCurrentSide());
+        new Turn($game, 5, Card::fromRankSuit('Ts'));
+        try {
+            new Turn($game, 6, Card::fromRankSuit('4h'));
+            self::fail('Revoke must be rejected.');
+        } catch (\DomainException $exception) {
+            self::assertEquals('Cannot play suit ♥, because opening suit is ♠.', $exception->getMessage());
+        }
+        self::assertCount(5, $game->getTurns());
+        self::assertEquals(Side::North, $game->getCurrentSide());
+    }
+
+    public function testDiscardWhenVoidInLedSuit(): void
+    {
+        $game = new StubGame(self::getFixedTable(), Side::North);
+        // trick 1, North leads: West wins
+        new Turn($game, 1, Card::fromRankSuit('6s'));
+        new Turn($game, 2, Card::fromRankSuit('4s'));
+        new Turn($game, 3, Card::fromRankSuit('7s'));
+        new Turn($game, 4, Card::fromRankSuit('As'));
+        // trick 2, West leads: East wins, North and West are now void in spades
+        new Turn($game, 5, Card::fromRankSuit('Ts'));
+        new Turn($game, 6, Card::fromRankSuit('3s'));
+        new Turn($game, 7, Card::fromRankSuit('Ks'));
+        new Turn($game, 8, Card::fromRankSuit('Js'));
+        self::assertEquals(Side::East, $game->getCurrentSide());
+        // trick 3, East leads: West and North discard clubs
+        new Turn($game, 9, Card::fromRankSuit('Qs'));
+        new Turn($game, 10, Card::fromRankSuit('9s'));
+        new Turn($game, 11, Card::fromRankSuit('5c'));
+        new Turn($game, 12, Card::fromRankSuit('2c'));
+        self::assertCount(12, $game->getTurns());
+        self::assertEquals(3, $game->getWins()->getEastWest());
+        self::assertEquals(0, $game->getWins()->getNorthSouth());
+        self::assertEquals(Side::East, $game->getCurrentSide());
+        // trick 4, East leads hearts: follow-suit check uses the current led suit, not spades
+        new Turn($game, 13, Card::fromRankSuit('5h'));
+        new Turn($game, 14, Card::fromRankSuit('7h'));
+        new Turn($game, 15, Card::fromRankSuit('9h'));
+        try {
+            new Turn($game, 16, Card::fromRankSuit('Td'));
+            self::fail('Revoke must be rejected.');
+        } catch (\DomainException $exception) {
+            self::assertEquals('Cannot play suit ♦, because opening suit is ♥.', $exception->getMessage());
+        }
+        new Turn($game, 16, Card::fromRankSuit('4h'));
+        self::assertCount(16, $game->getTurns());
+        self::assertEquals(4, $game->getWins()->getEastWest());
+        self::assertEquals(Side::West, $game->getCurrentSide());
+    }
+
     public function testJoin(): void
     {
         $table = self::getTable();
@@ -169,5 +258,15 @@ final class GameTest extends TestCase
         $game->join($player, Side::North);
         self::assertFalse($game->isDummy($player));
         self::assertFalse($game->isDummySide(Side::North));
+    }
+
+    private static function getFixedTable(): Table
+    {
+        return new Table(
+            Hand::createFromString('6s,4h,3s,Td,6c,3d,3h,Kc,Qc,Tc,7d,2c,6d'),
+            Hand::createFromString('9d,Jh,5s,8c,Ks,4s,5h,4d,8s,Jc,2d,2s,Qs'),
+            Hand::createFromString('7h,Kd,Js,2h,Th,Qh,7s,Ac,3c,Ad,7c,9s,6h'),
+            Hand::createFromString('9h,Ts,5c,Jd,9c,As,8h,Ah,Kh,8d,4c,Qd,5d'),
+        );
     }
 }

@@ -51,7 +51,14 @@ abstract class Auction implements \Stringable
 
     public function getSuitValue(): int
     {
-        return null !== $this->trump ? $this->trump->getInt() : 16;
+        return match ($this->trump) {
+            null => 16,
+            Suit::Clubs => 1,
+            Suit::Diamonds => 2,
+            Suit::Hearts => 4,
+            Suit::Spades => 8,
+            default => throw new \LogicException(\sprintf('Invalid trump suit %s.', $this->trump->value)),
+        };
     }
 
     public function isGreaterThan(self $auction): bool
